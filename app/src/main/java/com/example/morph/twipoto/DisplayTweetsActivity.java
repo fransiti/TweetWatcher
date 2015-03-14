@@ -13,6 +13,8 @@ import android.widget.ListView;
 import android.widget.TextView;
 import com.twitter.sdk.android.core.TwitterException;
 
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -30,6 +32,9 @@ public class DisplayTweetsActivity extends ListActivity implements GetResultForP
     private List<Status> tweets;
     private Timer timer;
     private LinearLayout mapBarLayout;
+    private Boolean isFirstRequest = true;
+    private int tweetCount = 5;
+    private Long mostRecentId;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,6 +45,7 @@ public class DisplayTweetsActivity extends ListActivity implements GetResultForP
         setCallbackContext();
         LocationController.getInstance().getLocation();
         LocationController.getInstance().setRadius(radius);
+        tweets = new ArrayList<>();
         timer = new Timer();
         timer.schedule(new requestForTweets(),0,10000);
     }
@@ -68,7 +74,12 @@ public class DisplayTweetsActivity extends ListActivity implements GetResultForP
     @Override
     public void onTweetResponse(QueryResult result) {
         try{
-            tweets = result.getTweets();
+            if (isFirstRequest) {
+                firstUpdate(result.getTweets());
+            }else {
+                updateTweetList(result.getTweets());
+            }
+            isFirstRequest = false;
             TweetListAdapter adapter = new TweetListAdapter(DisplayTweetsActivity.this);
             tweetListView.setAdapter(adapter);
 
@@ -76,6 +87,32 @@ public class DisplayTweetsActivity extends ListActivity implements GetResultForP
             System.out.println("Failed to search tweets: " + te.getMessage());
             System.exit(-1);
         }
+    }
+
+    public void firstUpdate(List<Status> tweetList){
+        mostRecentId = tweetList.get(0).getId();
+        int i = 0;
+        if (tweets.size()<5) {
+            while (tweets.size() < 5 && tweets.size() <= tweetList.size() ) {
+                tweets.add(tweetList.get(i));
+                i++;
+            }
+        }
+    }
+
+    public void updateTweetList(List<Status> tweetList){
+        int i = 0;
+        Iterator<Status> itr = tweetList.iterator();
+        while (itr.hasNext() && (tweetList.get(i).getId() != mostRecentId)){
+            if (!(tweets.contains(tweetList.get(i))) && (tweets.size() < 5)) {
+                tweets.add(tweetList.get(i));
+            }else {
+                tweets.remove(tweetList.get(i));
+            }
+            i++;
+        }
+
+
     }
 
     //declaring an array adapter to manage tweet lists

@@ -50,6 +50,10 @@ public class TwitterRequestController extends Application {
         return requestController;
     }
 
+    public QueryResult getQuery(){
+        return result;
+    }
+
     //configure the twitter factory instance with keys and tokens provided by twitter
     public void configureTwitterFactoryInstance(){
         ConfigurationBuilder cb = new ConfigurationBuilder();
@@ -100,6 +104,7 @@ public class TwitterRequestController extends Application {
         @Override
         protected void onPostExecute(QueryResult queryresult) {
             super.onPostExecute(queryresult);
+            result = queryresult;
             resultForPublicTweets.onTweetResponse(queryresult);
         }
     }

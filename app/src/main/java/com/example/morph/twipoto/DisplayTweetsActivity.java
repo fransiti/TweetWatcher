@@ -26,15 +26,15 @@ import twitter4j.Status;
 
 public class DisplayTweetsActivity extends ListActivity implements GetResultForPublicTweets{
     private Query query;
-    private double radius = 5; //query for tweets within 1 km radius
+    private double radius = 500; //query for tweets within 1 km radius
     //layout objects
     private ListView tweetListView;
     private List<Status> tweets;
     private Timer timer;
     private LinearLayout mapBarLayout;
-    private Boolean isFirstRequest = true;
     private int tweetCount = 5;
-    private Long mostRecentId;
+    private Long mostRecentTime;
+    TweetListAdapter adapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -73,14 +73,15 @@ public class DisplayTweetsActivity extends ListActivity implements GetResultForP
 
     @Override
     public void onTweetResponse(QueryResult result) {
+
         try{
-            if (isFirstRequest) {
+            if (tweets.size()<5) {
                 firstUpdate(result.getTweets());
             }else {
                 updateTweetList(result.getTweets());
             }
-            isFirstRequest = false;
-            TweetListAdapter adapter = new TweetListAdapter(DisplayTweetsActivity.this);
+           
+            adapter = new TweetListAdapter(DisplayTweetsActivity.this);
             tweetListView.setAdapter(adapter);
 
         } catch (TwitterException te) {
@@ -90,7 +91,7 @@ public class DisplayTweetsActivity extends ListActivity implements GetResultForP
     }
 
     public void firstUpdate(List<Status> tweetList){
-        mostRecentId = tweetList.get(0).getId();
+        mostRecentTime = tweetList.get(0).getCreatedAt().getTime();
         int i = 0;
         if (tweets.size()<5) {
             while (tweets.size() < 5 && tweets.size() <= tweetList.size() ) {
@@ -101,18 +102,13 @@ public class DisplayTweetsActivity extends ListActivity implements GetResultForP
     }
 
     public void updateTweetList(List<Status> tweetList){
-        int i = 0;
-        Iterator<Status> itr = tweetList.iterator();
-        while (itr.hasNext() && (tweetList.get(i).getId() != mostRecentId)){
-            if (!(tweets.contains(tweetList.get(i))) && (tweets.size() < 5)) {
-                tweets.add(tweetList.get(i));
-            }else {
-                tweets.remove(tweetList.get(i));
+        for (int i=0;i<tweetList.size();i++){
+            if (tweetList.get(i).getCreatedAt().getTime() != mostRecentTime ){    //checks for the most recent tweet time
+                tweets.remove(tweets.size()-1);    //remove the last item from the list
+                tweets.add(0,tweetList.get(i));     //add a new item to the list at first position
             }
-            i++;
         }
-
-
+        mostRecentTime = tweetList.get(0).getCreatedAt().getTime();   //update the most recent tweet time
     }
 
     //declaring an array adapter to manage tweet lists
@@ -131,6 +127,7 @@ public class DisplayTweetsActivity extends ListActivity implements GetResultForP
         public TweetListAdapter(Context context){
             super(context,R.layout.tweet_details_layout,tweets);
             mContext = context;
+            notifyDataSetChanged();
         }
 
         @Override

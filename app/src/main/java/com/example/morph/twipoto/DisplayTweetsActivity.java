@@ -14,6 +14,7 @@ import android.widget.TextView;
 import com.twitter.sdk.android.core.TwitterException;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Timer;
@@ -32,8 +33,8 @@ public class DisplayTweetsActivity extends ListActivity implements GetResultForP
     private List<Status> tweets;
     private Timer timer;
     private LinearLayout mapBarLayout;
-    private int tweetCount = 5;
-    private Long mostRecentTime;
+    private int tweetCount = 100; //size of tweets to be shown
+    private Date mostRecentTweetDate;
     TweetListAdapter adapter;
 
     @Override
@@ -47,7 +48,7 @@ public class DisplayTweetsActivity extends ListActivity implements GetResultForP
         LocationController.getInstance().setRadius(radius);
         tweets = new ArrayList<>();
         timer = new Timer();
-        timer.schedule(new requestForTweets(),0,10000);
+        timer.schedule(new requestForTweets(),0,10000);   // request for tweets after each 10 seconds
     }
 
     //initializes layout objects
@@ -75,10 +76,10 @@ public class DisplayTweetsActivity extends ListActivity implements GetResultForP
     public void onTweetResponse(QueryResult result) {
 
         try{
-            if (tweets.size()<5) {
-                firstUpdate(result.getTweets());
+            if (tweets.size()<tweetCount) {
+                firstUpdate(result.getTweets());    //called to update the list to the size mentioned
             }else {
-                updateTweetList(result.getTweets());
+                updateTweetList(result.getTweets());    //updates the list with the same buffer size
             }
            
             adapter = new TweetListAdapter(DisplayTweetsActivity.this);
@@ -90,25 +91,27 @@ public class DisplayTweetsActivity extends ListActivity implements GetResultForP
         }
     }
 
+    //called when the tweets list is less than tweet buffer size mentioned
     public void firstUpdate(List<Status> tweetList){
-        mostRecentTime = tweetList.get(0).getCreatedAt().getTime();
+        mostRecentTweetDate = tweetList.get(0).getCreatedAt();  //assigning the most recent status
         int i = 0;
-        if (tweets.size()<5) {
-            while (tweets.size() < 5 && tweets.size() <= tweetList.size() ) {
-                tweets.add(tweetList.get(i));
-                i++;
-            }
+
+        while (tweets.size() < tweetCount && tweets.size() < tweetList.size() ) {
+            tweets.add(tweetList.get(i));   //add to the list if the list size is less than size mentioned and
+            i++;                            //check if the responded tweet list has fewer tweets than the buffer size
         }
+
     }
 
+    //updates the list to have same buffer size of tweets mentioned
     public void updateTweetList(List<Status> tweetList){
         for (int i=0;i<tweetList.size();i++){
-            if (tweetList.get(i).getCreatedAt().getTime() != mostRecentTime ){    //checks for the most recent tweet time
+            if ((mostRecentTweetDate.compareTo(tweetList.get(i).getCreatedAt()))<0){    //checks and adds the tweet to the list if its a recent one
                 tweets.remove(tweets.size()-1);    //remove the last item from the list
                 tweets.add(0,tweetList.get(i));     //add a new item to the list at first position
             }
         }
-        mostRecentTime = tweetList.get(0).getCreatedAt().getTime();   //update the most recent tweet time
+        mostRecentTweetDate = tweetList.get(0).getCreatedAt();   //update the most recent tweet Date
     }
 
     //declaring an array adapter to manage tweet lists

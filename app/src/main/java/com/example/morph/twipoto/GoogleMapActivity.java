@@ -9,6 +9,7 @@ import com.google.android.gms.maps.MapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -25,6 +26,8 @@ public class GoogleMapActivity extends  Activity implements GetResultForPublicTw
     private List<Status> tweets;
     private Timer timer;
     private double userCurLatitude,userCurLongitude;
+    private int tweetCount = 100; //size of tweets to be shown
+    private Date mostRecentTweetDate;
 
     @Override
     public void onCreate(Bundle savedInstanceState){
@@ -69,9 +72,41 @@ public class GoogleMapActivity extends  Activity implements GetResultForPublicTw
 
     @Override
     public void onTweetResponse(QueryResult result) {
-        tweets = result.getTweets();
+        if (tweets.size()<tweetCount) {
+            firstUpdate(result.getTweets());    //called to update the list to the size mentioned
+        }else {
+            updateTweetList(result.getTweets());    //updates the list with the same buffer size
+        }
         displayMarkersOnMap();
     }
+
+
+    //called when the tweets list is less than tweet buffer size mentioned
+    public void firstUpdate(List<Status> tweetList){
+        mostRecentTweetDate = tweetList.get(0).getCreatedAt();  //assigning the most recent status
+        int i = 0;
+
+        while (tweets.size() < tweetCount && tweets.size() < tweetList.size() ) {
+            if (!(tweets.contains(tweetList.get(i)))) {     //add to the list if the list size is less than size mentioned and
+                tweets.add(tweetList.get(i));               //check if the responded tweet list has fewer tweets than the buffer size
+            }                                               //also checks if the tweet list has no duplicate values
+            i++;
+        }
+
+    }
+
+    //updates the list to have same buffer size of tweets mentioned
+    public void updateTweetList(List<Status> tweetList){
+        for (int i=0;i<tweetList.size();i++){
+            if (((mostRecentTweetDate.compareTo(tweetList.get(i).getCreatedAt()))<0) && !(tweets.contains(tweetList.get(i)))){    //checks and adds the tweet to the list if its a recent one
+                tweets.remove(tweets.size()-1);     //remove the last item from the list
+                tweets.add(0,tweetList.get(i));     //add a new item to the list at first position
+                //also checks if the tweet list has no duplicate values
+            }
+        }
+        mostRecentTweetDate = tweetList.get(0).getCreatedAt();   //update the most recent tweet Date
+    }
+
 
     //called to run every 10 seconds
     private class requestForTweets extends TimerTask {

@@ -27,7 +27,7 @@ import twitter4j.Status;
 
 public class DisplayTweetsActivity extends ListActivity implements GetResultForPublicTweets{
     private Query query;
-    private double radius = 500; //query for tweets within 1 km radius
+    private double radius = 5; //query for tweets within 1 km radius
     //layout objects
     private ListView tweetListView;
     private List<Status> tweets;

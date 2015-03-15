@@ -40,6 +40,12 @@ public class GoogleMapActivity extends  Activity implements GetResultForPublicTw
         timer.schedule(new requestForTweets(),0,10000);
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        setCallbackContext();
+    }
+
     //setting context to controllers
     public void setCallbackContext(){
         TwitterRequestController.getInstance().resultForPublicTweets = this;

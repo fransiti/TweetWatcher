@@ -26,6 +26,7 @@ import twitter4j.Status;
 
 
 public class DisplayTweetsActivity extends ListActivity implements GetResultForPublicTweets{
+
     private Query query;
     private double radius = 5; //query for tweets within 1 km radius
     //layout objects
@@ -49,6 +50,12 @@ public class DisplayTweetsActivity extends ListActivity implements GetResultForP
         tweets = new ArrayList<>();
         timer = new Timer();
         timer.schedule(new requestForTweets(),0,10000);   // request for tweets after each 10 seconds
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        setCallbackContext();
     }
 
     //initializes layout objects

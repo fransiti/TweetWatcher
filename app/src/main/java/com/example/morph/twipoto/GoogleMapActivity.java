@@ -58,7 +58,7 @@ public class GoogleMapActivity extends  Activity implements GetResultForPublicTw
         userCurLongitude = LocationController.getInstance().getCurrentLongitude();
         LatLng latLng = new LatLng(userCurLatitude,userCurLongitude);
         map = ((MapFragment)getFragmentManager().findFragmentById(R.id.map)).getMap();
-        map.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng,12));
+        map.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng,10));
         displayMarkersOnMap();
     }
 
@@ -79,7 +79,7 @@ public class GoogleMapActivity extends  Activity implements GetResultForPublicTw
     @Override
     public void onTweetResponse(QueryResult result) {
         if (tweets.size()<tweetCount) {
-            firstUpdate(result.getTweets());    //called to update the list to the size mentioned
+            addToBufferList(result.getTweets());    //called to update the list to the size mentioned
         }else {
             updateTweetList(result.getTweets());    //updates the list with the same buffer size
         }
@@ -88,7 +88,7 @@ public class GoogleMapActivity extends  Activity implements GetResultForPublicTw
 
 
     //called when the tweets list is less than tweet buffer size mentioned
-    public void firstUpdate(List<Status> tweetList){
+    public void addToBufferList(List<Status> tweetList){
         mostRecentTweetDate = tweetList.get(0).getCreatedAt();  //assigning the most recent status
         int i = 0;
 

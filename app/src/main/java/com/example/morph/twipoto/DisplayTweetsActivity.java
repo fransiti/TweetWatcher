@@ -84,7 +84,7 @@ public class DisplayTweetsActivity extends ListActivity implements GetResultForP
 
         try{
             if (tweets.size()<tweetCount) {
-                firstUpdate(result.getTweets());    //called to update the list to the size mentioned
+                addToBufferList(result.getTweets());    //called to update the list to the size mentioned
             }else {
                 updateTweetList(result.getTweets());    //updates the list with the same buffer size
             }
@@ -99,7 +99,7 @@ public class DisplayTweetsActivity extends ListActivity implements GetResultForP
     }
 
     //called when the tweets list is less than tweet buffer size mentioned
-    public void firstUpdate(List<Status> tweetList){
+    public void addToBufferList(List<Status> tweetList){
         mostRecentTweetDate = tweetList.get(0).getCreatedAt();  //assigning the most recent status
         int i = 0;
 

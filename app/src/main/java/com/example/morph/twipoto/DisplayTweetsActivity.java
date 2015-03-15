@@ -97,8 +97,10 @@ public class DisplayTweetsActivity extends ListActivity implements GetResultForP
         int i = 0;
 
         while (tweets.size() < tweetCount && tweets.size() < tweetList.size() ) {
-            tweets.add(tweetList.get(i));   //add to the list if the list size is less than size mentioned and
-            i++;                            //check if the responded tweet list has fewer tweets than the buffer size
+            if (!(tweets.contains(tweetList.get(i)))) {     //add to the list if the list size is less than size mentioned and
+                tweets.add(tweetList.get(i));               //check if the responded tweet list has fewer tweets than the buffer size
+            }                                               //also checks if the tweet list has no duplicate values
+            i++;
         }
 
     }
@@ -106,9 +108,10 @@ public class DisplayTweetsActivity extends ListActivity implements GetResultForP
     //updates the list to have same buffer size of tweets mentioned
     public void updateTweetList(List<Status> tweetList){
         for (int i=0;i<tweetList.size();i++){
-            if ((mostRecentTweetDate.compareTo(tweetList.get(i).getCreatedAt()))<0){    //checks and adds the tweet to the list if its a recent one
-                tweets.remove(tweets.size()-1);    //remove the last item from the list
+            if (((mostRecentTweetDate.compareTo(tweetList.get(i).getCreatedAt()))<0) && !(tweets.contains(tweetList.get(i)))){    //checks and adds the tweet to the list if its a recent one
+                tweets.remove(tweets.size()-1);     //remove the last item from the list
                 tweets.add(0,tweetList.get(i));     //add a new item to the list at first position
+                                                    //also checks if the tweet list has no duplicate values
             }
         }
         mostRecentTweetDate = tweetList.get(0).getCreatedAt();   //update the most recent tweet Date
